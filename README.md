@@ -1,47 +1,49 @@
-# Hi there! 👋 I'm Zac Brown
+name: CI/CD Pipeline
 
-Welcome to my GitHub profile! I'm a developer passionate about building meaningful projects and contributing to open source.
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on PR to the main branch
 
-## 🚀 About Me
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-- 🔭 I'm currently working on various projects and exploring new technologies
-- 🌱 Always learning and improving my skills
-- 💡 Interested in clean code, best practices, and collaborative development
-- 🎯 Driven by solving real-world problems through technology
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-**Announcement:** I am Zac Brown, and I would like to let the world know that I have ended my contract with my management.
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'  # Specify the Node.js version
 
-## 💻 Skills & Technologies
+      - name: Install dependencies
+        run: npm install
 
-**Languages:**
-- JavaScript/TypeScript
-- Python
-- HTML/CSS
-- And more...
+      - name: Run tests
+        run: npm test
 
-**Tools & Frameworks:**
-- Git & GitHub
-- RESTful APIs
-- Web Development
-- Version Control
+      - name: Build the project
+        run: npm run build
 
-## 📂 Featured Projects
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
 
-Check out my repositories above to see what I'm working on!
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-## 🤝 Let's Connect
-
-- 💼 [LinkedIn](https://linkedin.com)
-- 🐦 [Twitter](https://twitter.com)
-- 📧 Email: [your-email@example.com](mailto:your-email@example.com)
-
-## 📊 GitHub Stats
-
-![GitHub followers](https://img.shields.io/github/followers/zacbrown727?style=social)
-![GitHub User's stars](https://img.shields.io/github/stars/zacbrown727?style=social)
-
----
-
-**Feel free to explore my projects, fork, star, and contribute!**
-
-_Last updated: January 28, 2026_
+      - name: Deploy to Server
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+        run: |
+          curl -X POST $API_URL/deploy \
+          -H "Authorization: Bearer $API_TOKEN" \
+          -d '{"status": "deploying", "timestamp": "$(date)"}'
